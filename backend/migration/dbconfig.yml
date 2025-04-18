@@ -1,0 +1,5 @@
+migrate-blog:
+    dialect: mysql
+    datasource: root:root@(localhost:3306)/blog_db?parseTime=true&loc=Local
+    dir: ./mysql-blog
+    table: migrations
