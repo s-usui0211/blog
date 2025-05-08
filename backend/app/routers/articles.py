@@ -5,6 +5,8 @@ from models import models
 from database import get_db
 from pydantic import BaseModel
 from datetime import datetime
+from .auth import get_current_user
+from schemas.user import User
 
 router = APIRouter()
 
@@ -23,9 +25,12 @@ class Article(ArticleBase):
     created_at: datetime
     updated_at: datetime
     author_id: int
+    author: User
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "from_attributes": True
+    }
 
 
 @router.get("/articles/", response_model=List[Article])
@@ -43,8 +48,12 @@ def get_article(article_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/articles/", response_model=Article)
-def create_article(article: ArticleCreate, db: Session = Depends(get_db)):
-    db_article = models.Article(**article.dict(), author_id=1)  # 仮のauthor_id
+def create_article(article: ArticleCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    db_article = models.Article(
+        title=article.title,
+        content=article.content,
+        author=current_user
+    )
     db.add(db_article)
     db.commit()
     db.refresh(db_article)
