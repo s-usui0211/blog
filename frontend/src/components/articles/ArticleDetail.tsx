@@ -65,7 +65,7 @@ const ArticleDetail: React.FC = () => {
                 </Typography>
                 <Box sx={{ mb: 3 }}>
                     <Typography color="textSecondary">
-                        作成者: {article.author?.username || '匿名ユーザー'}
+                        作成者: {article.author?.username || '不明なユーザー'}
                     </Typography>
                     <Typography color="textSecondary">
                         {new Date(article.created_at).toLocaleDateString()}

@@ -6,11 +6,9 @@ import {
     Card,
     CardContent,
     Typography,
-    Button,
     Box,
 } from '@mui/material';
 import axios from 'axios';
-import { useAuth } from '../../contexts/AuthContext';
 
 interface Article {
     id: number;
@@ -24,7 +22,6 @@ interface Article {
 
 const ArticleList: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
-    const { isAuthenticated } = useAuth();
 
     useEffect(() => {
         const fetchArticles = async () => {
@@ -49,27 +46,33 @@ const ArticleList: React.FC = () => {
             </Box>
             <Grid container spacing={3}>
                 {articles.map((article) => (
-                    <Grid item xs={12} sm={6} md={4} key={article.id}>
-                        <Card>
-                            <CardContent>
+                    <Grid item xs={12} key={article.id}>
+                        <Card
+                            component={RouterLink}
+                            to={`/articles/${article.id}`}
+                            sx={{
+                                textDecoration: 'none',
+                                color: 'inherit',
+                                '&:hover': {
+                                    backgroundColor: 'action.hover',
+                                },
+                            }}
+                        >
+                            <CardContent
+                                sx={{
+                                    border: '1px solid rgba(0, 0, 0, 0.12)',
+                                    borderRadius: '4px',
+                                    backgroundColor: 'background.paper',
+                                }}>
                                 <Typography variant="h6" component="h2" gutterBottom>
                                     {article.title}
                                 </Typography>
                                 <Typography color="textSecondary" gutterBottom>
-                                    作成者: {article.author?.username || '匿名ユーザー'}
+                                    作成者: {article.author?.username || '不明なユーザー'}
                                 </Typography>
                                 <Typography color="textSecondary" gutterBottom>
                                     {new Date(article.created_at).toLocaleDateString()}
                                 </Typography>
-                                <Button
-                                    component={RouterLink}
-                                    to={`/articles/${article.id}`}
-                                    variant="outlined"
-                                    color="primary"
-                                    sx={{ mt: 1 }}
-                                >
-                                    詳細を見る
-                                </Button>
                             </CardContent>
                         </Card>
                     </Grid>
