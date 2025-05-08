@@ -42,20 +42,10 @@ const ArticleList: React.FC = () => {
 
     return (
         <Container>
-            <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box sx={{ mb: 4 }}>
                 <Typography variant="h4" component="h1">
                     記事一覧
                 </Typography>
-                {isAuthenticated && (
-                    <Button
-                        component={RouterLink}
-                        to="/articles/create"
-                        variant="contained"
-                        color="primary"
-                    >
-                        新規記事作成
-                    </Button>
-                )}
             </Box>
             <Grid container spacing={3}>
                 {articles.map((article) => (
