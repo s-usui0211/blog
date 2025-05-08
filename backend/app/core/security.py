@@ -4,8 +4,8 @@ from jose import jwt
 from passlib.context import CryptContext
 
 
-# 環境変数で管理すべき値ですが、開発用に直接記述します
-SECRET_KEY = "your-secret-key-here"  # 本番環境では必ず変更してください
+# TODO: 秘密鍵を環境変数で管理する
+SECRET_KEY = "your-secret-key-here"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
