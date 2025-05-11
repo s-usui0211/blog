@@ -10,7 +10,7 @@ cd backend/app
 ```
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 
 ### フロントエンド
