@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Article {
     id: number;
@@ -72,8 +73,25 @@ const ArticleDetail: React.FC = () => {
                     </Typography>
                 </Box>
                 <Divider sx={{ mb: 3 }} />
-                <Box sx={{ typography: 'body1' }}>
-                    <ReactMarkdown>{article.content}</ReactMarkdown>
+                <Box sx={{
+                    typography: 'body1',
+                    '& table': {
+                        borderCollapse: 'collapse',
+                        width: '100%',
+                        margin: '1rem 0',
+                        border: '1px solid #dee2e6',
+                    },
+                    '& th, & td': {
+                        border: '1px solid #dee2e6',
+                        padding: '0.5rem',
+                        textAlign: 'left',
+                    },
+                    '& th': {
+                        backgroundColor: '#f8f9fa',
+                        fontWeight: 600,
+                    },
+                }}>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
                 </Box>
             </Paper>
         </Container>
