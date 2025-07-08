@@ -10,6 +10,7 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import ArticleList from './components/articles/ArticleList';
 import ArticleDetail from './components/articles/ArticleDetail';
 import CreateArticle from './components/articles/CreateArticle';
+import EditArticle from './components/articles/EditArticle';
 
 const theme = createTheme();
 
@@ -32,6 +33,14 @@ const App: React.FC = () => {
                     <CreateArticle />
                     </PrivateRoute>
                 }
+                />
+                <Route
+                    path="/articles/:id/edit"
+                    element={
+                        <PrivateRoute>
+                            <EditArticle />
+                        </PrivateRoute>
+                    }
                 />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

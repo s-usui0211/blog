@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from models import models
@@ -47,7 +47,7 @@ def get_article(article_id: int, db: Session = Depends(get_db)):
     return article
 
 
-@router.post("/articles/", response_model=Article)
+@router.post("/articles/", response_model=Article, status_code=status.HTTP_201_CREATED)
 def create_article(article: ArticleCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     db_article = models.Article(
         title=article.title,
@@ -58,3 +58,49 @@ def create_article(article: ArticleCreate, db: Session = Depends(get_db), curren
     db.commit()
     db.refresh(db_article)
     return db_article
+
+
+@router.put("/articles/{article_id}", response_model=Article)
+def update_article(
+    article_id: int,
+    article: ArticleCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_article = db.query(models.Article).filter(models.Article.id == article_id).first()
+    if not db_article:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
+
+    if db_article.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to update this article"
+        )
+
+    db_article.title = article.title
+    db_article.content = article.content
+
+    db.commit()
+    db.refresh(db_article)
+    return db_article
+
+
+@router.delete("/articles/{article_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_article(
+    article_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_article = db.query(models.Article).filter(models.Article.id == article_id).first()
+    if not db_article:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Article not found")
+
+    if db_article.author_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this article"
+        )
+
+    db.delete(db_article)
+    db.commit()
+    return None

@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
     Container,
     Typography,
     Paper,
     Box,
     Divider,
+    IconButton,
+    Tooltip,
 } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useAuth } from '../../contexts/AuthContext';
+import DeleteDialog from './DeleteDialog';
 
 interface Article {
     id: number;
@@ -17,43 +23,70 @@ interface Article {
     content: string;
     created_at: string;
     author?: {
+        id: number;
         username: string;
     };
 }
 
 const ArticleDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
+    const { user } = useAuth();
     const [article, setArticle] = useState<Article | null>(null);
     const [error, setError] = useState<string>('');
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchArticle = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8000/api/articles/${id}`);
+            setArticle(response.data);
+        } catch (error) {
+            console.error('Error fetching article:', error);
+            setError('記事の取得に失敗しました。');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchArticle = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8000/api/articles/${id}`);
-                setArticle(response.data);
-            } catch (error) {
-                console.error('Error fetching article:', error);
-                setError('記事の取得に失敗しました。');
-            }
-        };
-
         fetchArticle();
     }, [id]);
 
-    if (error) {
+    const handleDelete = async () => {
+        try {
+            await axios.delete(`http://localhost:8000/api/articles/${id}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+            });
+            navigate('/');
+        } catch (error) {
+            console.error('Error deleting article:', error);
+            setError('記事の削除に失敗しました。');
+        } finally {
+            setDeleteDialogOpen(false);
+        }
+    };
+
+    const isAuthor = user && article && user.id === article.author?.id;
+
+    if (isLoading) {
         return (
             <Container>
-                <Typography color="error" sx={{ mt: 4 }}>
-                    {error}
-                </Typography>
+                <Box display="flex" justifyContent="center" mt={4}>
+                    <CircularProgress />
+                </Box>
             </Container>
         );
     }
 
-    if (!article) {
+    if (error || !article) {
         return (
             <Container>
-                <Typography sx={{ mt: 4 }}>読み込み中...</Typography>
+                <Typography color="error" sx={{ mt: 4 }}>
+                    {error || '記事が見つかりません。'}
+                </Typography>
             </Container>
         );
     }
@@ -61,9 +94,33 @@ const ArticleDetail: React.FC = () => {
     return (
         <Container>
             <Paper sx={{ p: 4, mt: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom>
-                    {article.title}
-                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+                    <Typography variant="h4" component="h1" gutterBottom>
+                        {article.title}
+                    </Typography>
+                    {isAuthor && (
+                        <Box>
+                            <Tooltip title="記事を編集">
+                                <IconButton 
+                                    onClick={() => navigate(`/articles/${id}/edit`)}
+                                    color="primary"
+                                    aria-label="edit"
+                                >
+                                    <EditIcon />
+                                </IconButton>
+                            </Tooltip>
+                            <Tooltip title="記事を削除">
+                                <IconButton 
+                                    onClick={() => setDeleteDialogOpen(true)}
+                                    color="error"
+                                    aria-label="delete"
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
+                        </Box>
+                    )}
+                </Box>
                 <Box sx={{ mb: 3 }}>
                     <Typography color="textSecondary">
                         作成者: {article.author?.username || '不明なユーザー'}
@@ -94,6 +151,13 @@ const ArticleDetail: React.FC = () => {
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{article.content}</ReactMarkdown>
                 </Box>
             </Paper>
+
+            <DeleteDialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                onConfirm={handleDelete}
+                title={article.title}
+            />
         </Container>
     );
 };

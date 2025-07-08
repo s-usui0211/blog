@@ -1,13 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-interface User {
+export interface User {
     id: number;
     username: string;
     email: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
     user: User | null;
     login: (username: string, password: string) => Promise<void>;
     register: (username: string, email: string, password: string) => Promise<void>;
@@ -15,7 +15,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
